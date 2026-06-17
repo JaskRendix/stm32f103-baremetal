@@ -1,0 +1,28 @@
+name: Build Firmware
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Install ARM GCC
+        uses: carlosperate/arm-none-eabi-gcc-action@v1
+
+      - name: Configure (Release)
+        run: cmake -G Ninja -B build -DCMAKE_TOOLCHAIN_FILE=cmake/arm-none-eabi-gcc.cmake -DCMAKE_BUILD_TYPE=Release
+
+      - name: Build (Release)
+        run: ninja -C build
+
+      - name: Configure (Debug)
+        run: cmake -G Ninja -B build_debug -DCMAKE_TOOLCHAIN_FILE=cmake/arm-none-eabi-gcc.cmake -DCMAKE_BUILD_TYPE=Debug
+
+      - name: Build (Debug)
+        run: ninja -C build_debug

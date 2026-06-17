@@ -1,0 +1,36 @@
+# Build directories
+build/
+build_debug/
+debug/
+
+# CMake generated files
+CMakeCache.txt
+CMakeFiles/
+CMakeScripts/
+cmake_install.cmake
+CTestTestfile.cmake
+CTestTestfile.cmake
+compile_commands.json
+install_manifest.txt
+_deps/
+
+# IDE / editor files
+*.user
+*.swp
+*.swo
+*.vscode/
+*.idea/
+
+# Ninja
+*.ninja
+.ninja_deps
+.ninja_log
+
+# Firmware outputs
+*.elf
+*.bin
+*.hex
+*.map
+
+# OpenOCD / debug configs
+openocd.cfg
