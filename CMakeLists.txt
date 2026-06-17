@@ -49,29 +49,27 @@ if(CMAKE_C_COMPILER MATCHES "arm-none-eabi-gcc")
 
 endif()
 
-set(CMAKE_C_FLAGS "")
-set(CMAKE_CXX_FLAGS "")
-set(CMAKE_EXE_LINKER_FLAGS "")
+if(NOT CMAKE_CROSSCOMPILING)
 
-add_executable(test_gpio
-    tests/gpio_fake_hw.c
-    tests/test_gpio.c
-    drivers/gpio.c
-)
+    add_executable(test_gpio
+        tests/gpio_fake_hw.c
+        tests/test_gpio.c
+        drivers/gpio.c
+    )
 
-set_target_properties(test_gpio PROPERTIES
-    C_STANDARD 99
-)
+    set_target_properties(test_gpio PROPERTIES
+        C_STANDARD 99
+    )
 
-target_include_directories(test_gpio PRIVATE
-    drivers
-    include
-    core
-    tests
-)
+    target_include_directories(test_gpio PRIVATE
+        drivers
+        include
+        core
+        tests
+    )
 
+    target_compile_options(test_gpio PRIVATE
+        -include ${CMAKE_SOURCE_DIR}/tests/gpio_fake_hw.h
+    )
 
-target_compile_options(test_gpio PRIVATE
-    -include ${CMAKE_SOURCE_DIR}/tests/gpio_fake_hw.h
-)
-
+endif()
