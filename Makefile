@@ -31,4 +31,15 @@ tidy:
 		src/*.c \
 		-- -Iinclude -Icore -Idrivers
 
-.PHONY: all clean rebuild format tidy
+# Build and run host-side tests
+test:
+	@cmake -S . -B build_tests
+	@cmake --build build_tests
+	@cd build_tests && ./test_gpio
+
+# Build and run host-side tests
+test-clean:
+	@rm -rf build_tests
+	@make test
+
+.PHONY: all clean rebuild format tidy test

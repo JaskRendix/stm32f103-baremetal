@@ -14,31 +14,64 @@ set(SOURCES
     src/main.c
 )
 
-add_executable(out.elf ${SOURCES})
+if(CMAKE_C_COMPILER MATCHES "arm-none-eabi-gcc")
 
-target_include_directories(out.elf PRIVATE
+    message(STATUS "Building firmware for ARM Cortex-M3")
+
+    add_executable(out.elf ${SOURCES})
+
+    target_include_directories(out.elf PRIVATE
+        include
+        core
+        drivers
+    )
+
+    target_compile_options(out.elf PRIVATE
+        -mcpu=cortex-m3
+        -mthumb
+        --specs=nano.specs
+        -fdata-sections
+        -ffunction-sections
+        -Wall
+        -Werror
+        -Wfatal-errors
+        $<$<CONFIG:Debug>:-O0 -g>
+    )
+
+    target_link_options(out.elf PRIVATE
+        -T${CMAKE_SOURCE_DIR}/core/linker.ld
+        -mcpu=cortex-m3
+        -mthumb
+        --specs=nano.specs
+        -lc -lm -lnosys
+        -Wl,--gc-sections
+    )
+
+endif()
+
+set(CMAKE_C_FLAGS "")
+set(CMAKE_CXX_FLAGS "")
+set(CMAKE_EXE_LINKER_FLAGS "")
+
+add_executable(test_gpio
+    tests/gpio_fake_hw.c
+    tests/test_gpio.c
+    drivers/gpio.c
+)
+
+set_target_properties(test_gpio PROPERTIES
+    C_STANDARD 99
+)
+
+target_include_directories(test_gpio PRIVATE
+    drivers
     include
     core
-    drivers
+    tests
 )
 
-target_compile_options(out.elf PRIVATE
-    -mcpu=cortex-m3
-    -mthumb
-    --specs=nano.specs
-    -fdata-sections
-    -ffunction-sections
-    -Wall
-    -Werror
-    -Wfatal-errors
-    $<$<CONFIG:Debug>:-O0 -g>
+
+target_compile_options(test_gpio PRIVATE
+    -include ${CMAKE_SOURCE_DIR}/tests/gpio_fake_hw.h
 )
 
-target_link_options(out.elf PRIVATE
-    -T${CMAKE_SOURCE_DIR}/core/linker.ld
-    -mcpu=cortex-m3
-    -mthumb
-    --specs=nano.specs
-    -lc -lm -lnosys
-    -Wl,--gc-sections
-)
