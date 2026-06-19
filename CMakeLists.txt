@@ -73,3 +73,7 @@ if(NOT CMAKE_CROSSCOMPILING)
     )
 
 endif()
+
+add_subdirectory(examples/led_shift)
+add_subdirectory(examples/morse_code)
+add_subdirectory(examples/mosquito_trap)
