@@ -7,10 +7,10 @@
 /* Reset fake registers before each test */
 static void reset_fake_regs(void)
 {
-    GPIO_FAKE.CRL  = 0;
-    GPIO_FAKE.CRH  = 0;
-    GPIO_FAKE.IDR  = 0;
-    GPIO_FAKE.ODR  = 0;
+    GPIO_FAKE.CRL = 0;
+    GPIO_FAKE.CRH = 0;
+    GPIO_FAKE.IDR = 0;
+    GPIO_FAKE.ODR = 0;
     GPIO_FAKE.BSRR = 0;
 }
 

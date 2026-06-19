@@ -1,22 +1,24 @@
 #include "gpio.h"
 #include "stm32f103.h"
 
-#define DOT_DURATION_MS      200U
-#define DASH_DURATION_MS     (DOT_DURATION_MS * 3U)
-#define ELEMENT_SPACE_MS     DOT_DURATION_MS
-#define LETTER_SPACE_MS      (DOT_DURATION_MS * 3U)
-#define WORD_SPACE_MS        (DOT_DURATION_MS * 7U)
+#define DOT_DURATION_MS 200U
+#define DASH_DURATION_MS (DOT_DURATION_MS * 3U)
+#define ELEMENT_SPACE_MS DOT_DURATION_MS
+#define LETTER_SPACE_MS (DOT_DURATION_MS * 3U)
+#define WORD_SPACE_MS (DOT_DURATION_MS * 7U)
 
-static const char* MORSE_ALPHABET[26] = {
-    ".-","-...","-.-.","-..",".","..-.","--.","....","..",".---",
-    "-.-",".-..","--","-.","---",".--.","--.-",".-.","...","-",
-    "..-","...-",".--","-..-","-.--","--.."
-};
+static const char* MORSE_ALPHABET[26] = {".-",   "-...", "-.-.", "-..",  ".",    "..-.", "--.",
+                                         "....", "..",   ".---", "-.-",  ".-..", "--",   "-.",
+                                         "---",  ".--.", "--.-", ".-.",  "...",  "-",    "..-",
+                                         "...-", ".--",  "-..-", "-.--", "--.."};
 
 void delay_ms(uint32_t ms)
 {
     volatile uint32_t count = ms * 800U;
-    while (count--) __asm__("nop");
+    while (count--)
+    {
+        __asm__("nop");
+    }
 }
 
 void transmit_symbol(uint32_t duration_ms)
@@ -33,19 +35,25 @@ void morse_transmit_string(const char* str)
     {
         char c = str[i];
 
-        if (c == ' ') {
+        if (c == ' ')
+        {
             delay_ms(WORD_SPACE_MS - ELEMENT_SPACE_MS);
             continue;
         }
 
-        if (c >= 'a' && c <= 'z') c -= 32;
+        if (c >= 'a' && c <= 'z')
+        {
+            c -= 32;
+        }
 
         if (c >= 'A' && c <= 'Z')
         {
             const char* m = MORSE_ALPHABET[c - 'A'];
 
             for (uint32_t j = 0; m[j] != '\0'; j++)
+            {
                 transmit_symbol(m[j] == '.' ? DOT_DURATION_MS : DASH_DURATION_MS);
+            }
 
             delay_ms(LETTER_SPACE_MS - ELEMENT_SPACE_MS);
         }

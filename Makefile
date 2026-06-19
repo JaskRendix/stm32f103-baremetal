@@ -17,19 +17,15 @@ rebuild: clean all
 
 # Format all C and header files
 format:
-	@clang-format -i \
-		core/*.c core/*.h \
-		drivers/*.c drivers/*.h \
-		include/*.h \
-		src/*.c
+	@find core drivers include src tests examples -type f \( -name "*.c" -o -name "*.h" \) -print0 | xargs -0 clang-format -i
 
 # Run clang-tidy on all source files
 tidy:
-	@clang-tidy \
-		core/*.c \
-		drivers/*.c \
-		src/*.c \
-		-- -Iinclude -Icore -Idrivers
+	@FILES="$$(find core drivers src tests examples -type f -name '*.c')"; \
+	if [ -z "$$FILES" ]; then \
+		echo "No C files found"; exit 0; \
+	fi; \
+	clang-tidy $$FILES -- -Iinclude -Icore -Idrivers
 
 # Build and run host-side tests
 test:
@@ -42,4 +38,22 @@ test-clean:
 	@rm -rf build_tests
 	@make test
 
-.PHONY: all clean rebuild format tidy test
+# Build all host-side examples
+examples:
+	@cmake -S . -B build_examples
+	@cmake --build build_examples
+
+# Clean examples build directory
+examples-clean:
+	@rm -rf build_examples
+
+# Build + run a specific example (e.g. make run-example EX=rocket_telemetry)
+run-example:
+	@if [ -z "$(EX)" ]; then \
+		echo "Usage: make run-example EX=<example_name>"; exit 1; \
+	fi
+	@cmake -S . -B build_examples
+	@cmake --build build_examples --target $(EX)
+	@cd build_examples/examples/$(EX) && ./$(EX)
+
+.PHONY: all clean rebuild format tidy test examples examples-clean run-example

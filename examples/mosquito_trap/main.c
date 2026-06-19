@@ -1,15 +1,18 @@
 #include "gpio.h"
 #include "stm32f103.h"
 
-#define UV_LED_PIN       0U
-#define BLUE_LED_PIN     1U
-#define ZAPPER_GRID_PIN  2U
-#define LDR_SENSOR_PIN   3U
+#define UV_LED_PIN 0U
+#define BLUE_LED_PIN 1U
+#define ZAPPER_GRID_PIN 2U
+#define LDR_SENSOR_PIN 3U
 
 void delay_ms(uint32_t ms)
 {
     volatile uint32_t count = ms * 800U;
-    while (count--) __asm__("nop");
+    while (count--)
+    {
+        __asm__("nop");
+    }
 }
 
 int main(void)
@@ -36,7 +39,8 @@ int main(void)
             delay_ms(1500);
 
             gpio_clear_pin(GPIOA, UV_LED_PIN);
-            for (int i = 0; i < 5; i++) {
+            for (int i = 0; i < 5; i++)
+            {
                 gpio_set_pin(GPIOA, BLUE_LED_PIN);
                 delay_ms(100);
                 gpio_clear_pin(GPIOA, BLUE_LED_PIN);

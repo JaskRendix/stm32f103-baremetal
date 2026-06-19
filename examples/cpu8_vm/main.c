@@ -12,11 +12,11 @@
  */
 
 static const uint8_t program[] = {
-    CPU8_LOADI, 0x00, 0x01,      /* R0 = 0x01 */
-    CPU8_LOADI, 0x01, 0x20,      /* R1 = 0x20 */
-    CPU8_ADD,   0x00, 0x01,      /* R0 = R0 + R1 = 0x21 */
-    CPU8_OUT,   0x00, 0xF0,      /* OUT R0 -> port 0xF0 */
-    CPU8_HALT                      /* stop */
+    CPU8_LOADI, 0x00, 0x01, /* R0 = 0x01 */
+    CPU8_LOADI, 0x01, 0x20, /* R1 = 0x20 */
+    CPU8_ADD,   0x00, 0x01, /* R0 = R0 + R1 = 0x21 */
+    CPU8_OUT,   0x00, 0xF0, /* OUT R0 -> port 0xF0 */
+    CPU8_HALT               /* stop */
 };
 
 int main(void)
@@ -27,9 +27,11 @@ int main(void)
     printf("CPU8 VM starting...\n");
 
     int steps = 0;
-    while (cpu8_step(&cpu)) {
+    while (cpu8_step(&cpu))
+    {
         steps++;
-        if (steps > 1000) {
+        if (steps > 1000)
+        {
             printf("CPU8: safety stop after %d steps\n", steps);
             break;
         }

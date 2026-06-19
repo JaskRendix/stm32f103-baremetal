@@ -4,7 +4,10 @@
 void delay_ms(uint32_t ms)
 {
     volatile uint32_t count = ms * 800U;
-    while (count--) __asm__("nop");
+    while (count--)
+    {
+        __asm__("nop");
+    }
 }
 
 int main(void)
@@ -12,7 +15,9 @@ int main(void)
     RCC_APB2ENR |= RCC_APB2ENR_IOPAEN;
 
     for (uint8_t p = 0; p < 4; p++)
+    {
         gpio_setup(GPIOA, p, GPIO_MODE_OUTPUT_2MHz, GPIO_CNF_PUSHPULL);
+    }
 
     uint8_t i = 0;
 
