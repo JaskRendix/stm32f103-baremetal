@@ -20,8 +20,10 @@ void gpio_setup(uint32_t port, uint8_t pin, gpio_mode_t mode, gpio_cnf_t cnf)
     uint32_t shift = (pin & 7U) * 4U;
 
     /* Build mask and value */
-    uint32_t mask = (0xFU << shift); /* MODE + CNF = 4 bits */
-    uint32_t value = ((mode | cnf) & 0xFU) << shift;
+    uint32_t mask = (0xFU << shift);       /* MODE + CNF = 4 bits */
+    uint32_t value = ((mode | (cnf << 2U)) /* CNF must be shifted */
+                      & 0xFU)
+                     << shift;
 
     /* Apply configuration */
     *reg = (*reg & ~mask) | value;

@@ -24,7 +24,7 @@ static void test_gpio_setup_pin0_crl(void)
     gpio_setup(0, 0, GPIO_MODE_OUTPUT_2MHz, GPIO_CNF_PUSHPULL);
 
     uint32_t field = GPIO_FAKE.CRL & 0xFU;
-    assert(field == ((GPIO_MODE_OUTPUT_2MHz | GPIO_CNF_PUSHPULL) & 0xFU));
+    assert(field == ((GPIO_MODE_OUTPUT_2MHz | (GPIO_CNF_PUSHPULL << 2)) & 0xFU));
 }
 
 /* --- Test: gpio_setup on pin 7 (CRL highest field) --- */
@@ -38,7 +38,7 @@ static void test_gpio_setup_pin7_crl(void)
 
     uint32_t shift = 7U * 4U;
     uint32_t field = (GPIO_FAKE.CRL >> shift) & 0xFU;
-    assert(field == ((GPIO_MODE_OUTPUT_50MHz | GPIO_CNF_OPENDRAIN) & 0xFU));
+    assert(field == ((GPIO_MODE_OUTPUT_50MHz | (GPIO_CNF_OPENDRAIN << 2)) & 0xFU));
 }
 
 /* --- Test: gpio_setup on pin 8 (CRH lowest field) --- */
@@ -51,7 +51,7 @@ static void test_gpio_setup_pin8_crh(void)
     gpio_setup(0, 8, GPIO_MODE_INPUT, GPIO_CNF_FLOATING);
 
     uint32_t field = GPIO_FAKE.CRH & 0xFU;
-    assert(field == ((GPIO_MODE_INPUT | GPIO_CNF_FLOATING) & 0xFU));
+    assert(field == ((GPIO_MODE_INPUT | (GPIO_CNF_FLOATING << 2)) & 0xFU));
 }
 
 /* --- Test: gpio_setup on pin 15 (CRH highest field) --- */
@@ -65,7 +65,7 @@ static void test_gpio_setup_pin15_crh(void)
 
     uint32_t shift = 7U * 4U;
     uint32_t field = (GPIO_FAKE.CRH >> shift) & 0xFU;
-    assert(field == ((GPIO_MODE_INPUT | GPIO_CNF_INPUT_PUPD) & 0xFU));
+    assert(field == ((GPIO_MODE_INPUT | (GPIO_CNF_INPUT_PUPD << 2)) & 0xFU));
 }
 
 /* --- Test: gpio_set_pin / gpio_clear_pin --- */
