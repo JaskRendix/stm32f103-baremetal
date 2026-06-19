@@ -74,6 +74,9 @@ if(NOT CMAKE_CROSSCOMPILING)
 
 endif()
 
-add_subdirectory(examples/led_shift)
-add_subdirectory(examples/morse_code)
-add_subdirectory(examples/mosquito_trap)
+if(NOT CMAKE_CROSSCOMPILING)
+    add_subdirectory(examples/led_shift)
+    add_subdirectory(examples/morse_code)
+    add_subdirectory(examples/mosquito_trap)
+    add_subdirectory(examples/cpu8_vm)
+endif()
