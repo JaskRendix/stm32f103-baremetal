@@ -70,3 +70,19 @@ uart_status_t uart_send_string(const char* str)
     }
     return UART_OK;
 }
+
+uart_status_t uart_read_char(char* out)
+{
+    uint32_t timeout = UART_DEFAULT_TIMEOUT;
+
+    while (!uart_rx_ready())
+    {
+        if (--timeout == 0U)
+        {
+            return UART_TIMEOUT;
+        }
+    }
+
+    *out = (char)(uint8_t)USART1_DR;
+    return UART_OK;
+}

@@ -115,6 +115,36 @@ static void test_uart_send_string_timeout(void)
     printf("[PASS] test_uart_send_string_timeout\n");
 }
 
+/* --- Test: uart_read_char reads a byte and returns UART_OK when RXNE is set --- */
+static void test_uart_read_char_success(void)
+{
+    reset_fake_regs();
+    USART1_FAKE.SR |= (1U << 5U); /* USART_SR_RXNE */
+    USART1_FAKE.DR = (uint32_t)'Q';
+
+    char c = 0;
+    uart_status_t status = uart_read_char(&c);
+
+    assert(status == UART_OK);
+    assert(c == 'Q');
+    printf("[PASS] test_uart_read_char_success\n");
+}
+
+/* --- Test: uart_read_char times out and leaves *out unchanged when
+ *     RXNE never sets, instead of hanging --- */
+static void test_uart_read_char_timeout(void)
+{
+    reset_fake_regs();
+    /* RXNE never set: USART1_FAKE.SR left at 0 from reset_fake_regs() */
+
+    char c = 'Z';
+    uart_status_t status = uart_read_char(&c);
+
+    assert(status == UART_TIMEOUT);
+    assert(c == 'Z'); /* unchanged on timeout */
+    printf("[PASS] test_uart_read_char_timeout\n");
+}
+
 /* --- Simple test runner --- */
 int main(void)
 {
@@ -127,7 +157,9 @@ int main(void)
     test_uart_send_char_timeout();
     test_uart_send_string_success();
     test_uart_send_string_timeout();
+    test_uart_read_char_success();
+    test_uart_read_char_timeout();
 
-    printf("All 7 test_uart cases passed.\n");
+    printf("All 9 test_uart cases passed.\n");
     return 0;
 }

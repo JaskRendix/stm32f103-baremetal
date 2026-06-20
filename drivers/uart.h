@@ -42,6 +42,11 @@ uart_status_t uart_send_char(char c);
  * character that times out; otherwise returns UART_OK. */
 uart_status_t uart_send_string(const char* str);
 
+/* Reads one received byte into *out. Returns UART_OK once RXNE is set
+ * and a byte has been read, or UART_TIMEOUT if no byte arrives within
+ * UART_DEFAULT_TIMEOUT iterations. *out is left unchanged on timeout. */
+uart_status_t uart_read_char(char* out);
+
 /* Fast status-check helpers */
 static inline uint32_t uart_tx_ready(void) { return (USART1_SR & USART_SR_TXE) != 0U; }
 
