@@ -1,6 +1,6 @@
 #include <assert.h>
 #include <stdint.h>
-
+#include <stdio.h>
 #include "systick_fake_hw.h"
 #include "systick.h"
 #include "delay.h"
@@ -19,49 +19,42 @@ static void reset_fake_systick(void)
 static void test_systick_init(void)
 {
     reset_fake_systick();
-
     systick_init();
-
     assert(SysTick_FAKE.LOAD == (CPU_HZ / 1000) - 1);
     assert(SysTick_FAKE.VAL == 0);
-
     uint32_t expected =
         SysTick_CTRL_ENABLE_Msk | SysTick_CTRL_TICKINT_Msk | SysTick_CTRL_CLKSOURCE_Msk;
-
     assert(SysTick_FAKE.CTRL == expected);
+    printf("[PASS] test_systick_init\n");
 }
 
 /* --- Test: SysTick_Handler increments tick counter --- */
 static void test_systick_handler(void)
 {
     reset_fake_systick();
-
     assert(systick_ticks == 0);
-
     SysTick_Handler();
     assert(systick_ticks == 1);
-
     SysTick_Handler();
     assert(systick_ticks == 2);
+    printf("[PASS] test_systick_handler\n");
 }
 
 /* --- Test: systick_ms returns systick_ticks --- */
 static void test_systick_ms(void)
 {
     reset_fake_systick();
-
     systick_ticks = 1234;
     assert(systick_ms() == 1234);
-
     systick_ticks = 9999;
     assert(systick_ms() == 9999);
+    printf("[PASS] test_systick_ms\n");
 }
 
 /* --- Test: delay_ms waits until systick_ms advances --- */
 static void test_delay_ms(void)
 {
     reset_fake_systick();
-
     systick_ticks = 0;
     uint32_t start = systick_ms();
 
@@ -73,6 +66,7 @@ static void test_delay_ms(void)
 
     /* delay_ms should now be satisfied */
     assert(systick_ms() - start >= 10);
+    printf("[PASS] test_delay_ms\n");
 }
 
 /* --- Test: delay_us compiles and runs (structural test) --- */
@@ -82,16 +76,20 @@ static void test_delay_us(void)
     DELAY_US(1);
     DELAY_US(10);
     DELAY_US(100);
+    printf("[PASS] test_delay_us\n");
 }
 
 /* --- Simple test runner --- */
 int main(void)
 {
+    printf("Running test_systick...\n");
+
     test_systick_init();
     test_systick_handler();
     test_systick_ms();
     test_delay_ms();
     test_delay_us();
 
+    printf("All 5 test_systick cases passed.\n");
     return 0;
 }

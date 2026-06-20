@@ -7,6 +7,11 @@ set(CMAKE_C_STANDARD 99)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 set(CMAKE_C_EXTENSIONS OFF)
 
+# Host-side example programs are off by default so that configuring
+# build_tests (host unit tests) doesn't also compile every example.
+# Enabled explicitly by `make examples` via -DBUILD_EXAMPLES=ON.
+option(BUILD_EXAMPLES "Build host-side example programs" OFF)
+
 set(SOURCES
     core/startup.c
     core/vectors.c
@@ -16,9 +21,7 @@ set(SOURCES
 )
 
 if(CMAKE_C_COMPILER MATCHES "arm-none-eabi-gcc")
-
     message(STATUS "Building firmware for ARM Cortex-M3")
-
     add_executable(out.elf ${SOURCES})
 
     target_include_directories(out.elf PRIVATE
@@ -47,28 +50,23 @@ if(CMAKE_C_COMPILER MATCHES "arm-none-eabi-gcc")
         -lc -lm -lnosys
         -Wl,--gc-sections
     )
-
 endif()
 
 if(NOT CMAKE_CROSSCOMPILING)
-
     add_executable(test_gpio
         tests/gpio_fake_hw.c
         tests/test_gpio.c
         drivers/gpio.c
     )
-
     set_target_properties(test_gpio PROPERTIES
         C_STANDARD 99
     )
-
     target_include_directories(test_gpio PRIVATE
         drivers
         include
         core
         tests
     )
-
     target_compile_options(test_gpio PRIVATE
         -include ${CMAKE_SOURCE_DIR}/tests/gpio_fake_hw.h
     )
@@ -78,25 +76,21 @@ if(NOT CMAKE_CROSSCOMPILING)
         tests/test_systick.c
         drivers/systick.c
     )
-
     set_target_properties(test_systick PROPERTIES
         C_STANDARD 99
     )
-
     target_include_directories(test_systick PRIVATE
         drivers
         include
         core
         tests
     )
-
     target_compile_options(test_systick PRIVATE
         -include ${CMAKE_SOURCE_DIR}/tests/systick_fake_hw.h
     )
-
 endif()
 
-if(NOT CMAKE_CROSSCOMPILING)
+if(NOT CMAKE_CROSSCOMPILING AND BUILD_EXAMPLES)
     add_subdirectory(examples/led_shift)
     add_subdirectory(examples/morse_code)
     add_subdirectory(examples/mosquito_trap)

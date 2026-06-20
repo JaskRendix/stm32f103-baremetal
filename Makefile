@@ -31,8 +31,7 @@ tidy:
 test:
 	@cmake -S . -B build_tests
 	@cmake --build build_tests
-	@cd build_tests && ./test_gpio
-	@cd build_tests && ./test_systick
+	@cd build_tests && ./test_gpio && ./test_systick
 
 # Build and run host-side tests
 test-clean:
@@ -41,7 +40,7 @@ test-clean:
 
 # Build all host-side examples
 examples:
-	@cmake -S . -B build_examples
+	@cmake -S . -B build_examples -DBUILD_EXAMPLES=ON
 	@cmake --build build_examples
 
 # Clean examples build directory
@@ -53,7 +52,7 @@ run-example:
 	@if [ -z "$(EX)" ]; then \
 		echo "Usage: make run-example EX=<example_name>"; exit 1; \
 	fi
-	@cmake -S . -B build_examples
+	@cmake -S . -B build_examples -DBUILD_EXAMPLES=ON
 	@cmake --build build_examples --target $(EX)
 	@cd build_examples/examples/$(EX) && ./$(EX)
 
