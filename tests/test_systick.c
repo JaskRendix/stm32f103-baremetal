@@ -57,13 +57,10 @@ static void test_delay_ms(void)
     reset_fake_systick();
     systick_ticks = 0;
     uint32_t start = systick_ms();
-
     /* Start delay */
     delay_ms(10);
-
     /* Simulate time passing */
     systick_ticks = start + 10;
-
     /* delay_ms should now be satisfied */
     assert(systick_ms() - start >= 10);
     printf("[PASS] test_delay_ms\n");
@@ -79,6 +76,53 @@ static void test_delay_us(void)
     printf("[PASS] test_delay_us\n");
 }
 
+/* --- Test: delay_start_ms(0) is immediately done --- */
+static void test_delay_zero_ms_immediately_done(void)
+{
+    reset_fake_systick();
+    systick_ticks = 0;
+    delay_start_ms(0);
+    assert(delay_is_done() != 0);
+    printf("[PASS] test_delay_zero_ms_immediately_done\n");
+}
+
+/* --- Test: delay_start_ms(N) is not done until N ticks have elapsed --- */
+static void test_delay_nonzero_ms_completes_after_ticks(void)
+{
+    reset_fake_systick();
+    systick_ticks = 0;
+    delay_start_ms(5);
+    assert(delay_is_done() == 0);
+
+    for (uint32_t i = 0; i < 4; i++)
+    {
+        SysTick_Handler();
+        assert(delay_is_done() == 0);
+    }
+
+    /* 5th tick reaches the target */
+    SysTick_Handler();
+    assert(delay_is_done() != 0);
+    printf("[PASS] test_delay_nonzero_ms_completes_after_ticks\n");
+}
+
+/* --- Test: delay target landing exactly on 0 after wraparound is not
+ *     mistaken for "no delay running" --- */
+static void test_delay_handles_tick_wraparound(void)
+{
+    reset_fake_systick();
+    /* Choose a tick count so that systick_ticks + ms wraps to exactly 0 */
+    systick_ticks = 0xFFFFFFFFU;
+    delay_start_ms(1);
+    assert(delay_is_done() == 0);
+
+    /* This tick overflows systick_ticks back to 0, matching delay_target */
+    SysTick_Handler();
+    assert(systick_ticks == 0U);
+    assert(delay_is_done() != 0);
+    printf("[PASS] test_delay_handles_tick_wraparound\n");
+}
+
 /* --- Simple test runner --- */
 int main(void)
 {
@@ -89,7 +133,10 @@ int main(void)
     test_systick_ms();
     test_delay_ms();
     test_delay_us();
+    test_delay_zero_ms_immediately_done();
+    test_delay_nonzero_ms_completes_after_ticks();
+    test_delay_handles_tick_wraparound();
 
-    printf("All 5 test_systick cases passed.\n");
+    printf("All 8 test_systick cases passed.\n");
     return 0;
 }
