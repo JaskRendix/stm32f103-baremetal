@@ -32,6 +32,7 @@ test:
 	@cmake -S . -B build_tests
 	@cmake --build build_tests
 	@cd build_tests && ./test_gpio
+	@cd build_tests && ./test_systick
 
 # Build and run host-side tests
 test-clean:

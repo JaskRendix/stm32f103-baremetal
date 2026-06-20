@@ -5,6 +5,39 @@
 #include "project_config.h"
 #include "systick.h"
 
+/*
+ * Host build (tests) – no ARM asm, no real timing
+ */
+#ifndef __arm__
+
+#define _NOP_LOOP(count)                                                                           \
+    do                                                                                             \
+    {                                                                                              \
+    } while (0)
+#define NOP_LOOP(cycles)                                                                           \
+    do                                                                                             \
+    {                                                                                              \
+    } while (0)
+#define DELAY_NS(ns)                                                                               \
+    do                                                                                             \
+    {                                                                                              \
+    } while (0)
+#define DELAY_US(us)                                                                               \
+    do                                                                                             \
+    {                                                                                              \
+    } while (0)
+
+/* For tests: do NOT busy-wait forever */
+static inline void delay_ms(uint32_t ms) { /* no-op in host tests */ }
+
+static inline void delay_ms_start(uint32_t ms) { delay_start_ms(ms); }
+static inline uint8_t delay_ms_done(void) { return delay_is_done(); }
+
+/*
+ * Firmware build (ARM) – real timing
+ */
+#else
+
 /* One loop iteration = 3 cycles (subs, bne) */
 #define LOOP_CYCLES 3UL
 
@@ -47,4 +80,6 @@ static inline void delay_ms_start(uint32_t ms) { delay_start_ms(ms); }
 
 static inline uint8_t delay_ms_done(void) { return delay_is_done(); }
 
-#endif
+#endif /* __arm__ */
+
+#endif /* DELAY_H */

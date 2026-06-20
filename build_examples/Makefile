@@ -130,6 +130,19 @@ test_gpio/fast:
 .PHONY : test_gpio/fast
 
 #=============================================================================
+# Target rules for targets named test_systick
+
+# Build rule for target.
+test_systick: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 test_systick
+.PHONY : test_systick
+
+# fast build rule for target.
+test_systick/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_systick.dir/build.make CMakeFiles/test_systick.dir/build
+.PHONY : test_systick/fast
+
+#=============================================================================
 # Target rules for targets named led_shift
 
 # Build rule for target.
@@ -218,6 +231,30 @@ drivers/gpio.c.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_gpio.dir/build.make CMakeFiles/test_gpio.dir/drivers/gpio.c.s
 .PHONY : drivers/gpio.c.s
 
+drivers/systick.o: drivers/systick.c.o
+.PHONY : drivers/systick.o
+
+# target to build an object file
+drivers/systick.c.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_systick.dir/build.make CMakeFiles/test_systick.dir/drivers/systick.c.o
+.PHONY : drivers/systick.c.o
+
+drivers/systick.i: drivers/systick.c.i
+.PHONY : drivers/systick.i
+
+# target to preprocess a source file
+drivers/systick.c.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_systick.dir/build.make CMakeFiles/test_systick.dir/drivers/systick.c.i
+.PHONY : drivers/systick.c.i
+
+drivers/systick.s: drivers/systick.c.s
+.PHONY : drivers/systick.s
+
+# target to generate assembly for a file
+drivers/systick.c.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_systick.dir/build.make CMakeFiles/test_systick.dir/drivers/systick.c.s
+.PHONY : drivers/systick.c.s
+
 tests/gpio_fake_hw.o: tests/gpio_fake_hw.c.o
 .PHONY : tests/gpio_fake_hw.o
 
@@ -241,6 +278,30 @@ tests/gpio_fake_hw.s: tests/gpio_fake_hw.c.s
 tests/gpio_fake_hw.c.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_gpio.dir/build.make CMakeFiles/test_gpio.dir/tests/gpio_fake_hw.c.s
 .PHONY : tests/gpio_fake_hw.c.s
+
+tests/systick_fake_hw.o: tests/systick_fake_hw.c.o
+.PHONY : tests/systick_fake_hw.o
+
+# target to build an object file
+tests/systick_fake_hw.c.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_systick.dir/build.make CMakeFiles/test_systick.dir/tests/systick_fake_hw.c.o
+.PHONY : tests/systick_fake_hw.c.o
+
+tests/systick_fake_hw.i: tests/systick_fake_hw.c.i
+.PHONY : tests/systick_fake_hw.i
+
+# target to preprocess a source file
+tests/systick_fake_hw.c.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_systick.dir/build.make CMakeFiles/test_systick.dir/tests/systick_fake_hw.c.i
+.PHONY : tests/systick_fake_hw.c.i
+
+tests/systick_fake_hw.s: tests/systick_fake_hw.c.s
+.PHONY : tests/systick_fake_hw.s
+
+# target to generate assembly for a file
+tests/systick_fake_hw.c.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_systick.dir/build.make CMakeFiles/test_systick.dir/tests/systick_fake_hw.c.s
+.PHONY : tests/systick_fake_hw.c.s
 
 tests/test_gpio.o: tests/test_gpio.c.o
 .PHONY : tests/test_gpio.o
@@ -266,6 +327,30 @@ tests/test_gpio.c.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_gpio.dir/build.make CMakeFiles/test_gpio.dir/tests/test_gpio.c.s
 .PHONY : tests/test_gpio.c.s
 
+tests/test_systick.o: tests/test_systick.c.o
+.PHONY : tests/test_systick.o
+
+# target to build an object file
+tests/test_systick.c.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_systick.dir/build.make CMakeFiles/test_systick.dir/tests/test_systick.c.o
+.PHONY : tests/test_systick.c.o
+
+tests/test_systick.i: tests/test_systick.c.i
+.PHONY : tests/test_systick.i
+
+# target to preprocess a source file
+tests/test_systick.c.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_systick.dir/build.make CMakeFiles/test_systick.dir/tests/test_systick.c.i
+.PHONY : tests/test_systick.c.i
+
+tests/test_systick.s: tests/test_systick.c.s
+.PHONY : tests/test_systick.s
+
+# target to generate assembly for a file
+tests/test_systick.c.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_systick.dir/build.make CMakeFiles/test_systick.dir/tests/test_systick.c.s
+.PHONY : tests/test_systick.c.s
+
 # Help Target
 help:
 	@echo "The following are some of the valid targets for this Makefile:"
@@ -280,15 +365,25 @@ help:
 	@echo "... mosquito_trap"
 	@echo "... rocket_telemetry"
 	@echo "... test_gpio"
+	@echo "... test_systick"
 	@echo "... drivers/gpio.o"
 	@echo "... drivers/gpio.i"
 	@echo "... drivers/gpio.s"
+	@echo "... drivers/systick.o"
+	@echo "... drivers/systick.i"
+	@echo "... drivers/systick.s"
 	@echo "... tests/gpio_fake_hw.o"
 	@echo "... tests/gpio_fake_hw.i"
 	@echo "... tests/gpio_fake_hw.s"
+	@echo "... tests/systick_fake_hw.o"
+	@echo "... tests/systick_fake_hw.i"
+	@echo "... tests/systick_fake_hw.s"
 	@echo "... tests/test_gpio.o"
 	@echo "... tests/test_gpio.i"
 	@echo "... tests/test_gpio.s"
+	@echo "... tests/test_systick.o"
+	@echo "... tests/test_systick.i"
+	@echo "... tests/test_systick.s"
 .PHONY : help
 
 

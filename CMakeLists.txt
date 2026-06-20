@@ -73,6 +73,27 @@ if(NOT CMAKE_CROSSCOMPILING)
         -include ${CMAKE_SOURCE_DIR}/tests/gpio_fake_hw.h
     )
 
+    add_executable(test_systick
+        tests/systick_fake_hw.c
+        tests/test_systick.c
+        drivers/systick.c
+    )
+
+    set_target_properties(test_systick PROPERTIES
+        C_STANDARD 99
+    )
+
+    target_include_directories(test_systick PRIVATE
+        drivers
+        include
+        core
+        tests
+    )
+
+    target_compile_options(test_systick PRIVATE
+        -include ${CMAKE_SOURCE_DIR}/tests/systick_fake_hw.h
+    )
+
 endif()
 
 if(NOT CMAKE_CROSSCOMPILING)

@@ -1,7 +1,7 @@
 #include "systick.h"
 
 /* Global millisecond counter */
-static volatile uint32_t systick_ticks = 0;
+volatile uint32_t systick_ticks = 0;
 
 /* For non-blocking delay */
 static volatile uint32_t delay_target = 0;

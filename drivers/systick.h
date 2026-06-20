@@ -5,6 +5,10 @@
 #include "stm32f103.h"
 #include "project_config.h"
 
+extern volatile uint32_t systick_ticks;
+
+void SysTick_Handler(void);
+
 /*
  * SysTick provides a 1 ms timebase.
  * CPU_HZ must be defined in project_config.h.
