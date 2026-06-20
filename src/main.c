@@ -1,7 +1,7 @@
 #include "project_config.h"
 #include "stm32f103.h"
 #include "gpio.h"
-#include "delay.h"
+#include "systick.h"
 
 int main(void)
 {
@@ -11,13 +11,17 @@ int main(void)
     /* Configure LED pin */
     gpio_setup(LED_PORT, LED_PIN, GPIO_MODE_OUTPUT_2MHz, GPIO_CNF_PUSHPULL);
 
+    /* Start SysTick 1ms timebase */
+    systick_init();
+
+    uint32_t last = systick_ms();
+
     for (;;)
     {
-        gpio_toggle(LED_PORT, LED_PIN);
-
-        for (int i = 0; i < 250; i++)
+        if ((systick_ms() - last) >= 250)
         {
-            DELAY_US(1000);
+            gpio_toggle(LED_PORT, LED_PIN);
+            last = systick_ms();
         }
     }
 }

@@ -11,6 +11,7 @@ set(SOURCES
     core/startup.c
     core/vectors.c
     drivers/gpio.c
+    drivers/systick.c
     src/main.c
 )
 

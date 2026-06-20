@@ -231,4 +231,24 @@
 #define USB_FNR REG32(USBFS_BASE + 0x48)
 #define USB_DADDR REG32(USBFS_BASE + 0x4C)
 
+/* -------------------------------------------------------------------------- */
+/* Cortex-M3 SysTick                                                          */
+/* -------------------------------------------------------------------------- */
+
+typedef struct
+{
+    volatile uint32_t CTRL;  /* Control and status register */
+    volatile uint32_t LOAD;  /* Reload value register       */
+    volatile uint32_t VAL;   /* Current value register      */
+    volatile uint32_t CALIB; /* Calibration register        */
+} SysTick_Type;
+
+/* SysTick base address (Cortex-M core peripheral) */
+#define SysTick ((SysTick_Type*)0xE000E010UL)
+
+/* SysTick CTRL register bit definitions */
+#define SysTick_CTRL_ENABLE_Msk (1UL << 0)
+#define SysTick_CTRL_TICKINT_Msk (1UL << 1)
+#define SysTick_CTRL_CLKSOURCE_Msk (1UL << 2)
+
 #endif /* STM32F103_H */

@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 #include "project_config.h"
+#include "systick.h"
 
 /* One loop iteration = 3 cycles (subs, bne) */
 #define LOOP_CYCLES 3UL
@@ -27,5 +28,23 @@
 
 /* Delay in microseconds */
 #define DELAY_US(us) DELAY_NS((uint64_t)(us) * 1000ULL)
+
+/* --------------------------------------------------------------------------
+ * Non-blocking delay API (SysTick-based)
+ * -------------------------------------------------------------------------- */
+
+static inline void delay_ms(uint32_t ms)
+{
+    uint32_t start = systick_ms();
+    while ((systick_ms() - start) < ms)
+    {
+        /* busy wait */
+    }
+}
+
+/* Cooperative, non-blocking version */
+static inline void delay_ms_start(uint32_t ms) { delay_start_ms(ms); }
+
+static inline uint8_t delay_ms_done(void) { return delay_is_done(); }
 
 #endif

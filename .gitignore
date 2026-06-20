@@ -2,6 +2,7 @@
 build/
 build_debug/
 build_tests/
+build_examples/
 debug/
 
 # CMake generated files
