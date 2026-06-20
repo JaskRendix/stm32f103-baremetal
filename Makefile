@@ -31,7 +31,7 @@ tidy:
 test:
 	@cmake -S . -B build_tests
 	@cmake --build build_tests
-	@cd build_tests && ./test_gpio && ./test_systick
+	@cd build_tests && ./test_gpio && ./test_systick && ./test_uart
 
 # Build and run host-side tests
 test-clean:

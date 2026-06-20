@@ -251,4 +251,46 @@ typedef struct
 #define SysTick_CTRL_TICKINT_Msk (1UL << 1)
 #define SysTick_CTRL_CLKSOURCE_Msk (1UL << 2)
 
+/* -------------------------------------------------------------------------- */
+/* USART1                                                                    */
+/* -------------------------------------------------------------------------- */
+
+#define USART1_BASE (PERIPH_BASE + 0x13800UL)
+
+#define USART1_SR REG32(USART1_BASE + 0x00)
+#define USART1_DR REG32(USART1_BASE + 0x04)
+#define USART1_BRR REG32(USART1_BASE + 0x08)
+#define USART1_CR1 REG32(USART1_BASE + 0x0C)
+#define USART1_CR2 REG32(USART1_BASE + 0x10)
+#define USART1_CR3 REG32(USART1_BASE + 0x14)
+#define USART1_GTPR REG32(USART1_BASE + 0x18)
+
+/* USART1_SR bits */
+#define USART_SR_PE (1U << 0)
+#define USART_SR_FE (1U << 1)
+#define USART_SR_NE (1U << 2)
+#define USART_SR_ORE (1U << 3)
+#define USART_SR_IDLE (1U << 4)
+#define USART_SR_RXNE (1U << 5)
+#define USART_SR_TC (1U << 6)
+#define USART_SR_TXE (1U << 7)
+#define USART_SR_LBD (1U << 8)
+#define USART_SR_CTS (1U << 9)
+
+/* USART1_CR1 bits */
+#define USART_CR1_SBK (1U << 0)
+#define USART_CR1_RWU (1U << 1)
+#define USART_CR1_RE (1U << 2)
+#define USART_CR1_TE (1U << 3)
+#define USART_CR1_IDLEIE (1U << 4)
+#define USART_CR1_RXNEIE (1U << 5)
+#define USART_CR1_TCIE (1U << 6)
+#define USART_CR1_TXEIE (1U << 7)
+#define USART_CR1_PEIE (1U << 8)
+#define USART_CR1_PS (1U << 9)
+#define USART_CR1_PCE (1U << 10)
+#define USART_CR1_WAKE (1U << 11)
+#define USART_CR1_M (1U << 12)
+#define USART_CR1_UE (1U << 13)
+
 #endif /* STM32F103_H */

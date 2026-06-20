@@ -2,6 +2,7 @@
 #include "stm32f103.h"
 #include "gpio.h"
 #include "systick.h"
+#include "uart.h"
 
 int main(void)
 {
@@ -14,8 +15,11 @@ int main(void)
     /* Start SysTick 1ms timebase */
     systick_init();
 
-    uint32_t last = systick_ms();
+    /* Bring up UART1 for diagnostic output */
+    uart_init(UART_BAUD_115200);
+    (void)uart_send_string("LED blink started\r\n");
 
+    uint32_t last = systick_ms();
     for (;;)
     {
         if ((systick_ms() - last) >= 250)

@@ -17,6 +17,7 @@ set(SOURCES
     core/vectors.c
     drivers/gpio.c
     drivers/systick.c
+    drivers/uart.c
     src/main.c
 )
 
@@ -87,6 +88,27 @@ if(NOT CMAKE_CROSSCOMPILING)
     )
     target_compile_options(test_systick PRIVATE
         -include ${CMAKE_SOURCE_DIR}/tests/systick_fake_hw.h
+    )
+
+    add_executable(test_uart
+        tests/uart_fake_hw.c
+        tests/gpio_fake_hw.c
+        tests/test_uart.c
+        drivers/uart.c
+        drivers/gpio.c
+    )
+    set_target_properties(test_uart PROPERTIES
+        C_STANDARD 99
+    )
+    target_include_directories(test_uart PRIVATE
+        drivers
+        include
+        core
+        tests
+    )
+    target_compile_options(test_uart PRIVATE
+        -include${CMAKE_SOURCE_DIR}/tests/gpio_fake_hw.h
+        -include${CMAKE_SOURCE_DIR}/tests/uart_fake_hw.h
     )
 endif()
 
