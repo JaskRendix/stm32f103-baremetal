@@ -293,4 +293,37 @@ typedef struct
 #define USART_CR1_M (1U << 12)
 #define USART_CR1_UE (1U << 13)
 
+#define FLASH_KEYR REG32(FLASH_BASE + 0x04)
+#define FLASH_OPTKEYR REG32(FLASH_BASE + 0x08)
+#define FLASH_SR REG32(FLASH_BASE + 0x0C)
+#define FLASH_CR REG32(FLASH_BASE + 0x10)
+#define FLASH_AR REG32(FLASH_BASE + 0x14)
+#define FLASH_OBR REG32(FLASH_BASE + 0x1C)
+#define FLASH_WRPR REG32(FLASH_BASE + 0x20)
+
+/* FLASH_SR bits */
+#define FLASH_SR_BSY (1U << 0)
+#define FLASH_SR_PGERR (1U << 2)
+#define FLASH_SR_WRPRTERR (1U << 4)
+#define FLASH_SR_EOP (1U << 5)
+
+/* FLASH_CR bits */
+#define FLASH_CR_PG (1U << 0)
+#define FLASH_CR_PER (1U << 1)
+#define FLASH_CR_MER (1U << 2)
+#define FLASH_CR_OPTPG (1U << 4)
+#define FLASH_CR_OPTER (1U << 5)
+#define FLASH_CR_STRT (1U << 6)
+#define FLASH_CR_LOCK (1U << 7)
+#define FLASH_CR_OPTWRE (1U << 9)
+#define FLASH_CR_ERRIE (1U << 10)
+#define FLASH_CR_EOPIE (1U << 12)
+
+/* Unlock sequence keys (RM0008) */
+#define FLASH_KEY1 0x45670123UL
+#define FLASH_KEY2 0xCDEF89ABUL
+
+/* Program/erase base address (mapped flash memory, not the FLASH_R peripheral) */
+#define FLASH_MEM_BASE 0x08000000UL
+
 #endif /* STM32F103_H */

@@ -18,6 +18,7 @@ set(SOURCES
     drivers/gpio.c
     drivers/systick.c
     drivers/uart.c
+    drivers/flash.c
     src/main.c
 )
 
@@ -109,6 +110,24 @@ if(NOT CMAKE_CROSSCOMPILING)
     target_compile_options(test_uart PRIVATE
         -include${CMAKE_SOURCE_DIR}/tests/gpio_fake_hw.h
         -include${CMAKE_SOURCE_DIR}/tests/uart_fake_hw.h
+    )
+
+add_executable(test_flash
+        tests/flash_fake_hw.c
+        tests/test_flash.c
+        drivers/flash.c
+    )
+    set_target_properties(test_flash PROPERTIES
+        C_STANDARD 99
+    )
+    target_include_directories(test_flash PRIVATE
+        drivers
+        include
+        core
+        tests
+    )
+    target_compile_options(test_flash PRIVATE
+        -include${CMAKE_SOURCE_DIR}/tests/flash_fake_hw.h
     )
 endif()
 
