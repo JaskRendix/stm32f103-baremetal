@@ -154,6 +154,13 @@ flash_status_t flash_program_halfword(uint32_t addr, uint16_t data)
     }
 
     FLASH_CR |= FLASH_CR_PG;
+
+#ifndef __arm__
+    /* Host build: simulate flash programming */
+    FLASH_MEM16(addr) = data;
+#endif
+
+    /* Real hardware write */
     FLASH_MEM16(addr) = data;
 
     st = flash_wait_ready();
