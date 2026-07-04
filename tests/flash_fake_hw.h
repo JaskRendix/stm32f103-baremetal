@@ -5,7 +5,7 @@
 #include "stm32f103.h" /* real definitions first */
 #include "flash.h"
 
-#define FLASH_FAKE_PAGES 4U
+#define FLASH_FAKE_PAGES 8U
 #define FLASH_FAKE_SIZE (FLASH_FAKE_PAGES * FLASH_PAGE_SIZE)
 #define FLASH_FAKE_BASE FLASH_BASE_ADDR
 

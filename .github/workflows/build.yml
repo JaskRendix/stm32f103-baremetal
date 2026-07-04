@@ -35,3 +35,4 @@ jobs:
           ./test_gpio
           ./test_systick
           ./test_uart
+          ./test_flash

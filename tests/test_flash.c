@@ -129,3 +129,14 @@ int main(void)
     printf("All 10 test_flash cases passed.\n");
     return 0;
 }
+
+static void test_flash_consecutive_ops_no_sr_poisoning(void)
+{
+    flash_fake_reset();
+
+    assert(flash_erase_page(FLASH_FAKE_BASE) == FLASH_OK);
+    assert(flash_program_halfword(FLASH_FAKE_BASE, 0x1234U) == FLASH_OK);
+    assert(flash_program_halfword(FLASH_FAKE_BASE + 2U, 0x5678U) == FLASH_OK);
+
+    printf("[PASS] test_flash_consecutive_ops_no_sr_poisoning\n");
+}

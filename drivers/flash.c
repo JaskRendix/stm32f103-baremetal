@@ -18,6 +18,7 @@ static flash_status_t flash_wait_ready(void)
 static flash_status_t flash_check_errors(void)
 {
     uint32_t sr = FLASH_SR;
+    uint32_t sticky = sr & (FLASH_SR_EOP | FLASH_SR_WRPRTERR | FLASH_SR_PGERR);
     flash_status_t st = FLASH_OK;
 
     if (sr & FLASH_SR_WRPRTERR)
@@ -29,8 +30,16 @@ static flash_status_t flash_check_errors(void)
         st = FLASH_ERR_PROG;
     }
 
-    /* Sticky flags, write-1-to-clear */
-    FLASH_SR = FLASH_SR_EOP | FLASH_SR_WRPRTERR | FLASH_SR_PGERR;
+    if (sticky != 0U)
+    {
+#ifdef __arm__
+        /* Real HW: write-1-to-clear */
+        FLASH_SR = sticky;
+#else
+        /* Fake HW: emulate write-1-to-clear by clearing bits explicitly */
+        FLASH_SR &= ~sticky;
+#endif
+    }
 
     return st;
 }
@@ -41,6 +50,11 @@ void flash_unlock(void)
     {
         FLASH_KEYR = FLASH_KEY1;
         FLASH_KEYR = FLASH_KEY2;
+
+#ifndef __arm__
+        /* Host build: simulate hardware side effect of clearing LOCK. */
+        FLASH_CR &= ~FLASH_CR_LOCK;
+#endif
     }
 }
 
@@ -71,14 +85,20 @@ flash_status_t flash_erase_page(uint32_t page_addr)
         return st;
     }
 
+    /* If previous operation left errors, report and clear them before proceeding */
+    st = flash_check_errors();
+    if (st != FLASH_OK)
+    {
+        flash_lock();
+        return st;
+    }
+
     FLASH_CR |= FLASH_CR_PER;
     FLASH_AR = page_addr;
     FLASH_CR |= FLASH_CR_STRT;
 
 #ifndef __arm__
-    /* Host build: there is no real flash controller to perform the bulk
-     * erase side effect, so simulate it here for host-side tests. This
-     * branch never builds for the target. */
+    /* Host build: simulate bulk erase side effect. */
     for (uint32_t off = 0; off < FLASH_PAGE_SIZE; off += 2U)
     {
         FLASH_MEM16(page_addr + off) = 0xFFFFU;
@@ -119,6 +139,14 @@ flash_status_t flash_program_halfword(uint32_t addr, uint16_t data)
     flash_unlock();
 
     flash_status_t st = flash_wait_ready();
+    if (st != FLASH_OK)
+    {
+        flash_lock();
+        return st;
+    }
+
+    /* If previous operation left errors, report and clear them before proceeding */
+    st = flash_check_errors();
     if (st != FLASH_OK)
     {
         flash_lock();

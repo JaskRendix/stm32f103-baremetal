@@ -3,6 +3,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include "stm32f103.h"
 
 /* STM32F103 page size: 1KB on low/medium-density devices, 2KB on
  * high-density (>=256K flash). Override in project_config.h if your
