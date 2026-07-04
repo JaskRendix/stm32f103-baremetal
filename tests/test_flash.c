@@ -111,6 +111,80 @@ static void test_flash_wait_timeout(void)
     printf("[PASS] test_flash_wait_timeout\n");
 }
 
+static void test_flash_consecutive_ops_no_sr_poisoning(void)
+{
+    flash_fake_reset();
+
+    assert(flash_erase_page(FLASH_FAKE_BASE) == FLASH_OK);
+    assert(flash_program_halfword(FLASH_FAKE_BASE, 0x1234U) == FLASH_OK);
+    assert(flash_program_halfword(FLASH_FAKE_BASE + 2U, 0x5678U) == FLASH_OK);
+
+    printf("[PASS] test_flash_consecutive_ops_no_sr_poisoning\n");
+}
+
+static void test_flash_program_buffer_cross_page(void)
+{
+    flash_fake_reset();
+
+    uint8_t data[16];
+    memset(data, 0xAB, sizeof(data));
+
+    uint32_t addr = FLASH_FAKE_BASE + FLASH_PAGE_SIZE - 8U;
+
+    flash_status_t st = flash_program_buffer(addr, data, sizeof(data));
+    assert(st == FLASH_OK);
+
+    for (size_t i = 0; i < sizeof(data); i++)
+    {
+        uint32_t a = addr + (uint32_t)i;
+        uint16_t hw = flash_read_halfword(a & ~1U);
+        uint8_t byte = (uint8_t)(hw >> ((a & 1U) * 8U));
+        assert(byte == 0xAB);
+    }
+
+    printf("[PASS] test_flash_program_buffer_cross_page\n");
+}
+
+static void test_flash_erase_multiple_pages(void)
+{
+    flash_fake_reset();
+
+    memset(FLASH_FAKE.memory, 0x11, FLASH_PAGE_SIZE * 2U);
+
+    assert(flash_erase_page(FLASH_FAKE_BASE) == FLASH_OK);
+    assert(flash_erase_page(FLASH_FAKE_BASE + FLASH_PAGE_SIZE) == FLASH_OK);
+
+    for (uint32_t off = 0; off < FLASH_PAGE_SIZE * 2U; off += 2U) {
+        assert(flash_read_halfword(FLASH_FAKE_BASE + off) == 0xFFFFU);
+    }
+
+    printf("[PASS] test_flash_erase_multiple_pages\n");
+}
+
+static void test_flash_program_halfword_overwrite(void)
+{
+    flash_fake_reset();
+
+    assert(flash_program_halfword(FLASH_FAKE_BASE, 0xFFFFU) == FLASH_OK);
+    assert(flash_program_halfword(FLASH_FAKE_BASE, 0x0000U) == FLASH_OK);
+
+    assert(flash_read_halfword(FLASH_FAKE_BASE) == 0x0000U);
+
+    printf("[PASS] test_flash_program_halfword_overwrite\n");
+}
+
+static void test_flash_program_word_overwrite(void)
+{
+    flash_fake_reset();
+
+    assert(flash_program_word(FLASH_FAKE_BASE, 0xAAAAAAAAU) == FLASH_OK);
+    assert(flash_program_word(FLASH_FAKE_BASE, 0x55555555U) == FLASH_OK);
+
+    assert(flash_read_word(FLASH_FAKE_BASE) == 0x55555555U);
+
+    printf("[PASS] test_flash_program_word_overwrite\n");
+}
+
 int main(void)
 {
     printf("Running test_flash...\n");
@@ -126,17 +200,12 @@ int main(void)
     test_flash_program_wrprterr();
     test_flash_wait_timeout();
 
-    printf("All 10 test_flash cases passed.\n");
+    test_flash_consecutive_ops_no_sr_poisoning();
+    test_flash_program_buffer_cross_page();
+    test_flash_erase_multiple_pages();
+    test_flash_program_halfword_overwrite();
+    test_flash_program_word_overwrite();
+
+    printf("All 15 test_flash cases passed.\n");
     return 0;
-}
-
-static void test_flash_consecutive_ops_no_sr_poisoning(void)
-{
-    flash_fake_reset();
-
-    assert(flash_erase_page(FLASH_FAKE_BASE) == FLASH_OK);
-    assert(flash_program_halfword(FLASH_FAKE_BASE, 0x1234U) == FLASH_OK);
-    assert(flash_program_halfword(FLASH_FAKE_BASE + 2U, 0x5678U) == FLASH_OK);
-
-    printf("[PASS] test_flash_consecutive_ops_no_sr_poisoning\n");
 }
