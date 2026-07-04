@@ -27,7 +27,7 @@ blackbox_status_t blackbox_write_frame(const telemetry_frame_t* frame)
         return BLACKBOX_FULL;
     }
 
-    uint32_t addr = BLACKBOX_BASE + (write_index * (uint32_t)sizeof(telemetry_frame_t));
+    uint32_t addr = BLACKBOX_BASE + (unsigned long)write_index * sizeof(telemetry_frame_t);
 
     flash_status_t st =
         flash_program_buffer(addr, (const uint8_t*)frame, sizeof(telemetry_frame_t));
@@ -47,7 +47,8 @@ blackbox_status_t blackbox_read_frame(uint32_t index, telemetry_frame_t* out)
         return BLACKBOX_ERR_RANGE;
     }
 
-    uint32_t addr = BLACKBOX_BASE + (index * (uint32_t)sizeof(telemetry_frame_t));
+    uint32_t addr = BLACKBOX_BASE + (unsigned long)index * sizeof(telemetry_frame_t);
+
     uint8_t* raw = (uint8_t*)out;
 
     for (uint32_t i = 0; i < sizeof(telemetry_frame_t); i += 2U)

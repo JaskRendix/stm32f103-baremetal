@@ -154,7 +154,8 @@ static void test_flash_erase_multiple_pages(void)
     assert(flash_erase_page(FLASH_FAKE_BASE) == FLASH_OK);
     assert(flash_erase_page(FLASH_FAKE_BASE + FLASH_PAGE_SIZE) == FLASH_OK);
 
-    for (uint32_t off = 0; off < FLASH_PAGE_SIZE * 2U; off += 2U) {
+    for (uint32_t off = 0; off < FLASH_PAGE_SIZE * 2U; off += 2U)
+    {
         assert(flash_read_halfword(FLASH_FAKE_BASE + off) == 0xFFFFU);
     }
 
