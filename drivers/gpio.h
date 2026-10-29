@@ -4,6 +4,13 @@
 #include <stdint.h>
 #include "stm32f103.h"
 
+#ifdef HOST_TESTING
+#include <assert.h>
+#define GPIO_ASSERT_PIN(pin) assert((pin) < 16U)
+#else
+#define GPIO_ASSERT_PIN(pin) ((void)0)
+#endif
+
 /* --------------------------------------------------------------------------
  *  Mode enums
  * -------------------------------------------------------------------------- */
@@ -22,18 +29,18 @@ typedef enum
 /* Input configuration (CNF[1:0] when MODE = 0b00) */
 typedef enum
 {
-    GPIO_INPUT_CNF_ANALOG = 0x0,   /* Analog input */
-    GPIO_INPUT_CNF_FLOATING = 0x1, /* Floating input */
-    GPIO_INPUT_CNF_PUPD = 0x2      /* Input with pull-up / pull-down */
+    GPIO_INPUT_CNF_ANALOG = 0x0,
+    GPIO_INPUT_CNF_FLOATING = 0x1,
+    GPIO_INPUT_CNF_PUPD = 0x2
 } gpio_cnf_input_t;
 
 /* Output configuration (CNF[1:0] when MODE != 0b00) */
 typedef enum
 {
-    GPIO_OUTPUT_CNF_PUSHPULL = 0x0,    /* General purpose push-pull */
-    GPIO_OUTPUT_CNF_OPENDRAIN = 0x1,   /* General purpose open-drain */
-    GPIO_OUTPUT_CNF_AF_PUSHPULL = 0x2, /* Alternate function push-pull */
-    GPIO_OUTPUT_CNF_AF_OPENDRAIN = 0x3 /* Alternate function open-drain */
+    GPIO_OUTPUT_CNF_PUSHPULL = 0x0,
+    GPIO_OUTPUT_CNF_OPENDRAIN = 0x1,
+    GPIO_OUTPUT_CNF_AF_PUSHPULL = 0x2,
+    GPIO_OUTPUT_CNF_AF_OPENDRAIN = 0x3
 } gpio_cnf_output_t;
 
 /* Explicit pull configuration for INPUT_PUPD mode */
@@ -59,7 +66,10 @@ typedef enum
     GPIO_CNF_OPENDRAIN = 0x1,
     GPIO_CNF_AF_PUSHPULL = 0x2,
     GPIO_CNF_AF_OPENDRAIN = 0x3
-} gpio_cnf_t;
+} gpio_cnf_legacy_t;
+
+/* Preserve the original type name for existing application code. */
+typedef gpio_cnf_legacy_t gpio_cnf_t;
 
 /* --------------------------------------------------------------------------
  *  Core configuration API
@@ -76,6 +86,8 @@ void gpio_setup_output(uint32_t port, uint8_t pin, gpio_mode_t mode, gpio_cnf_ou
  */
 static inline void gpio_setup(uint32_t port, uint8_t pin, gpio_mode_t mode, gpio_cnf_t cnf)
 {
+    GPIO_ASSERT_PIN(pin);
+
     if (mode == GPIO_MODE_INPUT)
     {
         gpio_cnf_input_t icnf;
@@ -94,7 +106,7 @@ static inline void gpio_setup(uint32_t port, uint8_t pin, gpio_mode_t mode, gpio
             break;
         }
 
-        /* Legacy behavior: INPUT_PUPD with no explicit pull -> leave ODR as-is */
+        /* Legacy behavior: INPUT_PUPD with no explicit pull leaves ODR as-is. */
         gpio_setup_input(port, pin, icnf, GPIO_PULL_NONE);
     }
     else
@@ -128,21 +140,29 @@ static inline void gpio_setup(uint32_t port, uint8_t pin, gpio_mode_t mode, gpio
 
 static inline void gpio_write_pin(uint32_t port, uint8_t pin, uint8_t value)
 {
-    GPIOx_BSRR(port) = (1U << pin) << (value ? 0U : 16U);
+    GPIO_ASSERT_PIN(pin);
+    GPIOx_BSRR(port) = value ? (1U << pin) : (1U << (pin + 16U));
 }
 
-static inline void gpio_set_pin(uint32_t port, uint8_t pin) { GPIOx_BSRR(port) = (1U << pin); }
+static inline void gpio_set_pin(uint32_t port, uint8_t pin)
+{
+    GPIO_ASSERT_PIN(pin);
+    GPIOx_BSRR(port) = (1U << pin);
+}
 
 static inline void gpio_clear_pin(uint32_t port, uint8_t pin)
 {
+    GPIO_ASSERT_PIN(pin);
     GPIOx_BSRR(port) = (1U << (pin + 16U));
 }
 
 /* --------------------------------------------------------------------------
  *  Pin read helpers
  * -------------------------------------------------------------------------- */
+
 static inline uint32_t gpio_read_pin(uint32_t port, uint8_t pin)
 {
+    GPIO_ASSERT_PIN(pin);
     return (GPIOx_IDR(port) >> pin) & 1U;
 }
 
@@ -151,51 +171,54 @@ static inline uint16_t gpio_read_port(uint32_t port) { return (uint16_t)GPIOx_ID
 /* --------------------------------------------------------------------------
  *  Pull-up / pull-down configuration
  * -------------------------------------------------------------------------- */
+
+/* Configure pull state for pins configured as INPUT_PUPD.
+ * On STM32F1 the pull direction is selected via the ODR bit.
+ */
 static inline void gpio_set_pull(uint32_t port, uint8_t pin, gpio_pull_t pull)
 {
-    /* Legacy compatibility:
-     * 0 → pull-down
-     * 1 → pull-up
-     *
-     * Typed API:
-     * GPIO_PULL_UP   (1)
-     * GPIO_PULL_DOWN (2)
-     * GPIO_PULL_NONE (0)
-     */
+    GPIO_ASSERT_PIN(pin);
 
-    if (pull == GPIO_PULL_UP || pull == 1)
+    switch (pull)
     {
-        /* Pull-up: ODR bit = 1 */
+    case GPIO_PULL_UP:
         GPIOx_ODR(port) |= (1U << pin);
-    }
-    else if (pull == GPIO_PULL_DOWN || pull == 0)
-    {
-        /* Pull-down: ODR bit = 0 */
+        break;
+
+    case GPIO_PULL_DOWN:
         GPIOx_ODR(port) &= ~(1U << pin);
-    }
-    else
-    {
-        /* GPIO_PULL_NONE → leave ODR unchanged */
+        break;
+
+    case GPIO_PULL_NONE:
+    default:
+        break;
     }
 }
 
 /* --------------------------------------------------------------------------
- *  Toggle helper
+ *  Toggle helpers
  * -------------------------------------------------------------------------- */
+
 static inline void gpio_toggle(uint32_t port, uint8_t pin)
 {
+    GPIO_ASSERT_PIN(pin);
+
+    /* Toggle based on ODR state rather than the actual pin level. */
     if (GPIOx_ODR(port) & (1U << pin))
     {
-        /* Pin is high → clear it */
         GPIOx_BSRR(port) = (1U << (pin + 16U));
     }
     else
     {
-        /* Pin is low → set it */
         GPIOx_BSRR(port) = (1U << pin);
     }
 }
 
-static inline void gpio_toggle_fast(uint32_t port, uint8_t pin) { GPIOx_ODR(port) ^= (1U << pin); }
+/* Non-atomic ODR read-modify-write; not safe if another context modifies ODR. */
+static inline void gpio_toggle_fast(uint32_t port, uint8_t pin)
+{
+    GPIO_ASSERT_PIN(pin);
+    GPIOx_ODR(port) ^= (1U << pin);
+}
 
 #endif /* GPIO_H */

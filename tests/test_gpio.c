@@ -107,10 +107,18 @@ static void test_gpio_toggle(void)
 static void test_gpio_set_pull(void)
 {
     reset_fake_regs();
-    gpio_set_pull(0, 9, 1);
+
+    gpio_set_pull(0, 9, GPIO_PULL_UP);
     assert(GPIO_FAKE.ODR & (1U << 9));
-    gpio_set_pull(0, 9, 0);
+
+    gpio_set_pull(0, 9, GPIO_PULL_DOWN);
     assert((GPIO_FAKE.ODR & (1U << 9)) == 0);
+
+    GPIO_FAKE.ODR = (1U << 9);
+
+    gpio_set_pull(0, 9, GPIO_PULL_NONE);
+    assert(GPIO_FAKE.ODR & (1U << 9));
+
     printf("[PASS] test_gpio_set_pull\n");
 }
 
