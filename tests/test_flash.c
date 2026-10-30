@@ -174,16 +174,93 @@ static void test_flash_program_halfword_overwrite(void)
     printf("[PASS] test_flash_program_halfword_overwrite\n");
 }
 
-static void test_flash_program_word_overwrite(void)
+static void test_flash_program_word_rejects_0_to_1_transition(void)
 {
     flash_fake_reset();
 
     assert(flash_program_word(FLASH_FAKE_BASE, 0xAAAAAAAAU) == FLASH_OK);
-    assert(flash_program_word(FLASH_FAKE_BASE, 0x55555555U) == FLASH_OK);
 
-    assert(flash_read_word(FLASH_FAKE_BASE) == 0x55555555U);
+    flash_status_t st = flash_program_word(FLASH_FAKE_BASE, 0x55555555U);
 
-    printf("[PASS] test_flash_program_word_overwrite\n");
+    assert(st == FLASH_ERR_PROG);
+
+    printf("[PASS] test_flash_program_word_rejects_0_to_1_transition\n");
+}
+
+static void test_flash_program_buffer_zero_length(void)
+{
+    flash_fake_reset();
+
+    uint8_t data[2] = {0};
+
+    flash_status_t st = flash_program_buffer(FLASH_FAKE_BASE, data, 0);
+
+    assert(st == FLASH_OK);
+
+    printf("[PASS] test_flash_program_buffer_zero_length\n");
+}
+
+static void test_flash_program_word_align_error(void)
+{
+    flash_fake_reset();
+
+    flash_status_t st = flash_program_word(FLASH_FAKE_BASE + 2U, 0x12345678U);
+
+    assert(st == FLASH_ERR_ALIGN);
+
+    printf("[PASS] test_flash_program_word_align_error\n");
+}
+
+static void test_flash_program_halfword_range_error(void)
+{
+    flash_fake_reset();
+
+    flash_status_t st = flash_program_halfword(FLASH_FAKE_BASE + FLASH_SIZE_BYTES - 1U, 0x1234U);
+
+    assert(st == FLASH_ERR_RANGE);
+
+    printf("[PASS] test_flash_program_halfword_range_error\n");
+}
+
+static void test_flash_program_word_range_error(void)
+{
+    flash_fake_reset();
+
+    flash_status_t st = flash_program_word(FLASH_FAKE_BASE + FLASH_SIZE_BYTES - 2U, 0x12345678U);
+
+    assert(st == FLASH_ERR_RANGE);
+
+    printf("[PASS] test_flash_program_word_range_error\n");
+}
+
+static void test_flash_program_buffer_length_error(void)
+{
+    flash_fake_reset();
+
+    uint8_t data[3] = {1, 2, 3};
+
+    flash_status_t st = flash_program_buffer(FLASH_FAKE_BASE, data, sizeof(data));
+
+    assert(st == FLASH_ERR_LENGTH);
+
+    printf("[PASS] test_flash_program_buffer_length_error\n");
+}
+
+static void test_flash_helpers(void)
+{
+    flash_fake_reset();
+
+    assert(flash_addr_valid(FLASH_FAKE_BASE));
+
+    assert(!flash_addr_valid(FLASH_FAKE_BASE + FLASH_SIZE_BYTES));
+
+    assert(flash_is_page_aligned(FLASH_FAKE_BASE));
+
+    assert(!flash_is_page_aligned(FLASH_FAKE_BASE + 1));
+
+    assert(flash_page_start(FLASH_FAKE_BASE + 123) == FLASH_FAKE_BASE);
+
+    printf("[PASS] test_flash_helpers\n");
 }
 
 int main(void)
@@ -205,8 +282,14 @@ int main(void)
     test_flash_program_buffer_cross_page();
     test_flash_erase_multiple_pages();
     test_flash_program_halfword_overwrite();
-    test_flash_program_word_overwrite();
+    test_flash_program_word_rejects_0_to_1_transition();
+    test_flash_program_buffer_zero_length();
+    test_flash_program_word_align_error();
+    test_flash_program_halfword_range_error();
+    test_flash_program_word_range_error();
+    test_flash_program_buffer_length_error();
+    test_flash_helpers();
 
-    printf("All 15 test_flash cases passed.\n");
+    printf("All 21 test_flash cases passed.\n");
     return 0;
 }
