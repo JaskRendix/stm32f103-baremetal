@@ -123,6 +123,141 @@ static void test_delay_handles_tick_wraparound(void)
     printf("[PASS] test_delay_handles_tick_wraparound\n");
 }
 
+static void test_delay_wraparound_multiple_ticks(void)
+{
+    reset_fake_systick();
+
+    systick_ticks = 0xFFFFFFFCU;
+
+    delay_start_ms(8);
+
+    assert(!delay_is_done());
+
+    for (int i = 0; i < 7; i++)
+    {
+        SysTick_Handler();
+        assert(!delay_is_done());
+    }
+
+    SysTick_Handler();
+
+    assert(delay_is_done());
+
+    printf("[PASS] test_delay_wraparound_multiple_ticks\n");
+}
+
+static void test_delay_restart_while_active(void)
+{
+    reset_fake_systick();
+
+    delay_start_ms(10);
+
+    for (int i = 0; i < 3; i++)
+    {
+        SysTick_Handler();
+    }
+
+    delay_start_ms(5);
+
+    for (int i = 0; i < 4; i++)
+    {
+        SysTick_Handler();
+        assert(!delay_is_done());
+    }
+
+    SysTick_Handler();
+
+    assert(delay_is_done());
+
+    printf("[PASS] test_delay_restart_while_active\n");
+}
+
+static void test_delay_large_interval(void)
+{
+    reset_fake_systick();
+
+    delay_start_ms(1000000U);
+
+    assert(!delay_is_done());
+
+    systick_ticks = 999999U;
+    SysTick_Handler();
+
+    assert(delay_is_done());
+
+    printf("[PASS] test_delay_large_interval\n");
+}
+
+static void test_multiple_independent_delays(void)
+{
+    reset_fake_systick();
+
+    delay_start_ms(1);
+    SysTick_Handler();
+
+    assert(delay_is_done());
+
+    delay_start_ms(1);
+
+    assert(!delay_is_done());
+
+    SysTick_Handler();
+
+    assert(delay_is_done());
+
+    printf("[PASS] test_multiple_independent_delays\n");
+}
+
+static void test_delay_exact_target_boundary(void)
+{
+    reset_fake_systick();
+
+    delay_start_ms(3);
+
+    SysTick_Handler();
+    assert(!delay_is_done());
+
+    SysTick_Handler();
+    assert(!delay_is_done());
+
+    SysTick_Handler();
+    assert(delay_is_done());
+
+    printf("[PASS] test_delay_exact_target_boundary\n");
+}
+
+static void test_systick_reload_value(void)
+{
+    reset_fake_systick();
+
+    systick_init();
+
+    assert(SysTick_FAKE.LOAD == ((CPU_HZ / 1000U) - 1U));
+
+    printf("[PASS] test_systick_reload_value\n");
+}
+
+static void test_delay_wrap_to_nonzero_target(void)
+{
+    reset_fake_systick();
+
+    systick_ticks = 0xFFFFFFFEU;
+
+    delay_start_ms(4);
+
+    for (int i = 0; i < 3; i++)
+    {
+        SysTick_Handler();
+        assert(!delay_is_done());
+    }
+
+    SysTick_Handler();
+
+    assert(delay_is_done());
+
+    printf("[PASS] test_delay_wrap_to_nonzero_target\n");
+}
+
 /* --- Simple test runner --- */
 int main(void)
 {
@@ -136,7 +271,14 @@ int main(void)
     test_delay_zero_ms_immediately_done();
     test_delay_nonzero_ms_completes_after_ticks();
     test_delay_handles_tick_wraparound();
+    test_delay_wraparound_multiple_ticks();
+    test_delay_restart_while_active();
+    test_delay_large_interval();
+    test_multiple_independent_delays();
+    test_delay_exact_target_boundary();
+    test_systick_reload_value();
+    test_delay_wrap_to_nonzero_target();
 
-    printf("All 8 test_systick cases passed.\n");
+    printf("All 15 test_systick cases passed.\n");
     return 0;
 }

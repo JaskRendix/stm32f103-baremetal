@@ -1,6 +1,7 @@
 #ifndef SYSTICK_H
 #define SYSTICK_H
 
+#include <stdbool.h>
 #include <stdint.h>
 #include "stm32f103.h"
 #include "project_config.h"
@@ -28,6 +29,6 @@ uint32_t systick_ms(void);
  * never confused with "no delay running".
  */
 void delay_start_ms(uint32_t ms);
-uint8_t delay_is_done(void);
+bool delay_is_done(void);
 
 #endif /* SYSTICK_H */
