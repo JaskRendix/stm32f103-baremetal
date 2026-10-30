@@ -16,8 +16,15 @@ typedef struct
 /* One fake instance */
 extern systick_fake_t SysTick_FAKE;
 
+/* Reset fake registers to power-on state */
+void systick_fake_reset(void);
+
 /* Override SysTick pointer */
+
+#ifdef SysTick
 #undef SysTick
+#endif
+
 #define SysTick ((systick_fake_t*)&SysTick_FAKE)
 
-#endif
+#endif /* SYSTICK_FAKE_HW_H */

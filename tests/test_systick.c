@@ -8,10 +8,7 @@
 /* Reset fake SysTick registers before each test */
 static void reset_fake_systick(void)
 {
-    SysTick_FAKE.CTRL = 0;
-    SysTick_FAKE.LOAD = 0;
-    SysTick_FAKE.VAL = 0;
-    SysTick_FAKE.CALIB = 0;
+    systick_fake_reset();
     systick_ticks = 0;
 }
 
