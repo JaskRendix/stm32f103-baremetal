@@ -149,6 +149,6 @@ int main(void)
     test_gpio_set_pull();
     test_gpio_read();
 
-    printf("All 9 test_gpio cases passed.\n");
+    printf("All test_gpio cases passed.\n");
     return 0;
 }

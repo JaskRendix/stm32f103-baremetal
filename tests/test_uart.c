@@ -15,7 +15,11 @@ static void reset_fake_regs(void)
     USART1_FAKE.CR2 = 0;
     USART1_FAKE.CR3 = 0;
     USART1_FAKE.GTPR = 0;
+
     USART1_FAKE.force_txe_stuck = 0;
+    USART1_FAKE.force_tc_stuck = 0;
+
+    RCC_APB2ENR_FAKE = 0;
 
     GPIO_FAKE.CRL = 0;
     GPIO_FAKE.CRH = 0;
@@ -66,7 +70,7 @@ static void test_uart_init_enables_uart(void)
 static void test_uart_send_char_success(void)
 {
     reset_fake_regs();
-    USART1_FAKE.SR |= (1U << 7U); /* USART_SR_TXE */
+    USART1_FAKE.SR |= USART_SR_TXE; /* USART_SR_TXE */
 
     uart_status_t status = uart_send_char('A');
 
@@ -92,7 +96,7 @@ static void test_uart_send_char_timeout(void)
 static void test_uart_send_string_success(void)
 {
     reset_fake_regs();
-    USART1_FAKE.SR |= (1U << 7U); /* USART_SR_TXE */
+    USART1_FAKE.SR |= USART_SR_TXE; /* USART_SR_TXE */
 
     uart_status_t status = uart_send_string("hi");
 
@@ -119,7 +123,7 @@ static void test_uart_send_string_timeout(void)
 static void test_uart_read_char_success(void)
 {
     reset_fake_regs();
-    USART1_FAKE.SR |= (1U << 5U); /* USART_SR_RXNE */
+    USART1_FAKE.SR |= USART_SR_RXNE; /* USART_SR_RXNE */
     USART1_FAKE.DR = (uint32_t)'Q';
 
     char c = 0;
@@ -145,6 +149,189 @@ static void test_uart_read_char_timeout(void)
     printf("[PASS] test_uart_read_char_timeout\n");
 }
 
+static void test_uart_send_string_null(void)
+{
+    reset_fake_regs();
+
+    uart_status_t status = uart_send_string(NULL);
+
+    assert(status == UART_INVALID_ARG);
+
+    printf("[PASS] test_uart_send_string_null\n");
+}
+
+static void test_uart_read_char_null(void)
+{
+    reset_fake_regs();
+
+    uart_status_t status = uart_read_char(NULL);
+
+    assert(status == UART_INVALID_ARG);
+
+    printf("[PASS] test_uart_read_char_null\n");
+}
+
+static void test_uart_try_send_char_success(void)
+{
+    reset_fake_regs();
+
+    USART1_FAKE.SR |= USART_SR_TXE;
+
+    uart_status_t status = uart_try_send_char('A');
+
+    assert(status == UART_OK);
+    assert(USART1_FAKE.DR == 'A');
+
+    printf("[PASS] test_uart_try_send_char_success\n");
+}
+
+static void test_uart_try_send_char_busy(void)
+{
+    reset_fake_regs();
+
+    uart_status_t status = uart_try_send_char('A');
+
+    assert(status == UART_BUSY);
+
+    printf("[PASS] test_uart_try_send_char_busy\n");
+}
+
+static void test_uart_try_read_char_success(void)
+{
+    reset_fake_regs();
+
+    USART1_FAKE.SR |= USART_SR_RXNE;
+    USART1_FAKE.DR = 'K';
+
+    char c = 0;
+
+    uart_status_t status = uart_try_read_char(&c);
+
+    assert(status == UART_OK);
+    assert(c == 'K');
+
+    printf("[PASS] test_uart_try_read_char_success\n");
+}
+
+static void test_uart_try_read_char_no_data(void)
+{
+    reset_fake_regs();
+
+    char c = 0;
+
+    uart_status_t status = uart_try_read_char(&c);
+
+    assert(status == UART_NO_DATA);
+
+    printf("[PASS] test_uart_try_read_char_no_data\n");
+}
+
+static void test_uart_try_read_char_null(void)
+{
+    reset_fake_regs();
+
+    uart_status_t status = uart_try_read_char(NULL);
+
+    assert(status == UART_INVALID_ARG);
+
+    printf("[PASS] test_uart_try_read_char_null\n");
+}
+
+static void test_uart_flush_success(void)
+{
+    reset_fake_regs();
+
+    USART1_FAKE.SR |= USART_SR_TC;
+
+    uart_status_t status = uart_flush();
+
+    assert(status == UART_OK);
+
+    printf("[PASS] test_uart_flush_success\n");
+}
+
+static void test_uart_flush_timeout(void)
+{
+    reset_fake_regs();
+
+    USART1_FAKE.force_tc_stuck = 1;
+
+    uart_status_t status = uart_flush();
+
+    assert(status == UART_TIMEOUT);
+
+    printf("[PASS] test_uart_flush_timeout\n");
+}
+
+static void test_uart_read_char_error_flags(void)
+{
+    reset_fake_regs();
+
+    USART1_FAKE.SR |= USART_SR_ORE;
+
+    char c = 0;
+
+    assert(uart_read_char(&c) == UART_ERROR);
+
+    reset_fake_regs();
+    USART1_FAKE.SR |= USART_SR_FE;
+
+    assert(uart_read_char(&c) == UART_ERROR);
+
+    reset_fake_regs();
+    USART1_FAKE.SR |= USART_SR_NE;
+
+    assert(uart_read_char(&c) == UART_ERROR);
+
+    reset_fake_regs();
+    USART1_FAKE.SR |= USART_SR_PE;
+
+    assert(uart_read_char(&c) == UART_ERROR);
+
+    printf("[PASS] test_uart_read_char_error_flags\n");
+}
+
+static void test_uart_try_read_char_error(void)
+{
+    reset_fake_regs();
+
+    USART1_FAKE.SR |= USART_SR_ORE;
+
+    char c = 0;
+
+    assert(uart_try_read_char(&c) == UART_ERROR);
+
+    printf("[PASS] test_uart_try_read_char_error\n");
+}
+
+static void test_uart_init_enables_clocks(void)
+{
+    reset_fake_regs();
+
+    uart_init(UART_BAUD_115200);
+
+    uint32_t expected = RCC_APB2ENR_USART1EN | RCC_APB2ENR_IOPAEN;
+
+    assert((RCC_APB2ENR_FAKE & expected) == expected);
+
+    printf("[PASS] test_uart_init_enables_clocks\n");
+}
+
+static void test_uart_init_configures_gpio(void)
+{
+    reset_fake_regs();
+
+    uart_init(UART_BAUD_115200);
+
+    /* Verify PA9 and PA10 configuration.
+       Exact values depend on gpio_setup()
+       implementation and register layout. */
+
+    assert(GPIO_FAKE.CRH != 0);
+
+    printf("[PASS] test_uart_init_configures_gpio\n");
+}
+
 /* --- Simple test runner --- */
 int main(void)
 {
@@ -159,7 +346,20 @@ int main(void)
     test_uart_send_string_timeout();
     test_uart_read_char_success();
     test_uart_read_char_timeout();
+    test_uart_send_string_null();
+    test_uart_read_char_null();
+    test_uart_try_send_char_success();
+    test_uart_try_send_char_busy();
+    test_uart_try_read_char_success();
+    test_uart_try_read_char_no_data();
+    test_uart_try_read_char_null();
+    test_uart_flush_success();
+    test_uart_flush_timeout();
+    test_uart_read_char_error_flags();
+    test_uart_try_read_char_error();
+    test_uart_init_enables_clocks();
+    test_uart_init_configures_gpio();
 
-    printf("All 9 test_uart cases passed.\n");
+    printf("All test_uart cases passed.\n");
     return 0;
 }

@@ -290,6 +290,6 @@ int main(void)
     test_flash_program_buffer_length_error();
     test_flash_helpers();
 
-    printf("All 21 test_flash cases passed.\n");
+    printf("All test_flash cases passed.\n");
     return 0;
 }

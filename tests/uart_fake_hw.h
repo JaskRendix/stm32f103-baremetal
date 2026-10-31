@@ -32,6 +32,7 @@ typedef struct
      * real UART_DEFAULT_TIMEOUT iteration count.
      */
     volatile uint32_t force_txe_stuck;
+    volatile uint32_t force_tc_stuck;
 } uart_fake_regs_t;
 
 extern uart_fake_regs_t USART1_FAKE;
@@ -70,10 +71,17 @@ extern uint32_t RCC_APB2ENR_FAKE;
 static inline uint32_t uart_fake_read_sr(void)
 {
     uint32_t sr = USART1_FAKE.SR;
+
     if (USART1_FAKE.force_txe_stuck)
     {
-        sr &= ~(1U << 7U); /* USART_SR_TXE */
+        sr &= ~USART_SR_TXE;
     }
+
+    if (USART1_FAKE.force_tc_stuck)
+    {
+        sr &= ~USART_SR_TC;
+    }
+
     return sr;
 }
 

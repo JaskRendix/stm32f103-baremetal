@@ -10,9 +10,8 @@
  *
  * USART1 is clocked from APB2. CPU_HZ in project_config.h is assumed
  * to be the APB2 clock as actually configured in core/startup.c
- * (PPRE2_DIV_1 -> APB2 == SYSCLK == CPU_HZ). If PPRE2 is ever changed
- * to divide APB2, the baud rate calculation below must be updated to
- * use the real APB2 clock instead of CPU_HZ directly.
+ * (PPRE2_DIV_1 -> APB2 == SYSCLK == CPU_HZ). If PPRE2 is changed,
+ * update the baud-rate source clock accordingly.
  */
 
 typedef enum
@@ -24,28 +23,38 @@ typedef enum
 typedef enum
 {
     UART_OK = 0,
-    UART_TIMEOUT = -1
+    UART_TIMEOUT = -1,
+    UART_INVALID_ARG = -2,
+    UART_ERROR = -3,
+    UART_NO_DATA = -4,
+    UART_BUSY = -5
 } uart_status_t;
 
-/* Default timeout in busy-wait iterations for blocking operations.
- * Not a calibrated time value -- just a bound to guarantee these
- * calls cannot hang forever on dead/missing hardware. */
-#define UART_DEFAULT_TIMEOUT 100000UL
+/*
+ * Busy-wait iteration limit.
+ *
+ * This is NOT a calibrated time value. Actual elapsed time depends
+ * on compiler optimization level and CPU clock frequency.
+ */
+#define UART_DEFAULT_TIMEOUT ((uint32_t)100000U)
 
 void uart_init(uart_baud_t baud);
 
-/* Returns UART_OK on success, UART_TIMEOUT if TXE never set within
- * UART_DEFAULT_TIMEOUT iterations. */
+/* Blocking transmit */
 uart_status_t uart_send_char(char c);
 
-/* Sends the full string. Stops and returns UART_TIMEOUT on the first
- * character that times out; otherwise returns UART_OK. */
+/* Blocking string transmit */
 uart_status_t uart_send_string(const char* str);
 
-/* Reads one received byte into *out. Returns UART_OK once RXNE is set
- * and a byte has been read, or UART_TIMEOUT if no byte arrives within
- * UART_DEFAULT_TIMEOUT iterations. *out is left unchanged on timeout. */
+/* Blocking receive */
 uart_status_t uart_read_char(char* out);
+
+/* Non-blocking helpers */
+uart_status_t uart_try_send_char(char c);
+uart_status_t uart_try_read_char(char* out);
+
+/* Wait until the final byte has completely left the UART */
+uart_status_t uart_flush(void);
 
 /* Fast status-check helpers */
 static inline uint32_t uart_tx_ready(void) { return (USART1_SR & USART_SR_TXE) != 0U; }

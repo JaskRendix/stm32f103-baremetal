@@ -276,6 +276,6 @@ int main(void)
     test_systick_reload_value();
     test_delay_wrap_to_nonzero_target();
 
-    printf("All 15 test_systick cases passed.\n");
+    printf("All test_systick cases passed.\n");
     return 0;
 }
