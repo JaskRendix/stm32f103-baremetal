@@ -11,6 +11,9 @@ extern uint32_t _ebss;
 extern void (*const __init_array_start[])(void);
 extern void (*const __init_array_end[])(void);
 
+/* Startup timeout for HSE/PLL readiness checks */
+#define RCC_STARTUP_TIMEOUT 1000000U
+
 int main(void);
 
 static void runtime_init(void)
@@ -18,6 +21,13 @@ static void runtime_init(void)
     for (void (*const* fn)(void) = __init_array_start; fn < __init_array_end; ++fn)
     {
         (*fn)();
+    }
+}
+
+__attribute__((noreturn)) static void fault_halt(void)
+{
+    for (;;)
+    {
     }
 }
 
@@ -43,8 +53,14 @@ __attribute__((noreturn)) void Reset_Handler(void)
     /* Enable external high-speed oscillator (HSE) */
     RCC_CR |= RCC_CR_HSEON;
 
+    uint32_t timeout = RCC_STARTUP_TIMEOUT;
+
     while ((RCC_CR & RCC_CR_HSERDY) == 0U)
     {
+        if (--timeout == 0U)
+        {
+            fault_halt();
+        }
     }
 
     /*
@@ -68,8 +84,14 @@ __attribute__((noreturn)) void Reset_Handler(void)
     /* Enable PLL */
     RCC_CR |= RCC_CR_PLLON;
 
+    timeout = RCC_STARTUP_TIMEOUT;
+
     while ((RCC_CR & RCC_CR_PLLRDY) == 0U)
     {
+        if (--timeout == 0U)
+        {
+            fault_halt();
+        }
     }
 
     /* Switch SYSCLK to PLL */
@@ -89,9 +111,7 @@ __attribute__((noreturn)) void Reset_Handler(void)
     (void)main();
 
     /* main() should never return */
-    for (;;)
-    {
-    }
+    fault_halt();
 }
 
 /* Default weak main */
