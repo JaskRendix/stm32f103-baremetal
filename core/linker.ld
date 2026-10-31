@@ -45,6 +45,16 @@ SECTIONS
         . = ALIGN(4);
     } > FLASH
 
+    .init_array :
+    {
+        . = ALIGN(4);
+        __init_array_start = .;
+        KEEP(*(SORT(.init_array.*)))
+        KEEP(*(.init_array))
+        __init_array_end = .;
+        . = ALIGN(4);
+    } > FLASH
+
     /* Data section (load in FLASH, run in RAM) */
     _sidata = LOADADDR(.data);
 
